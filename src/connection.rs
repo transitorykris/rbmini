@@ -47,4 +47,30 @@ impl RbConnection {
             peripherals,
         })
     }
+
+    pub async fn connect(&self) -> Result<(), String> {
+        for peripheral in self.peripherals.iter() {
+            let properties = peripheral.properties().await.unwrap();
+            let is_connected = peripheral.is_connected().await.unwrap();
+            let local_name = properties.unwrap().local_name.unwrap_or(String::from("unknown name"));
+            let address = peripheral.address();
+
+            if !local_name.starts_with(RACEBOX_LOCAL_NAME) {
+               continue
+            }
+
+            if is_connected {
+                return Ok(())
+            }
+
+            if let Err(err) = peripheral.connect().await {
+                continue
+            }
+
+            println!("connected");
+
+            return Ok(())
+        }
+        return Err(String::from("failed to find racebox mini"))
+    }
 }
