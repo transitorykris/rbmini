@@ -1,9 +1,10 @@
 use btleplug::api::{Central, Manager, Peripheral, ScanFilter};
+use serde::__private::de::IdentifierDeserializer;
 use std::time::Duration;
 use tokio::time;
 use uuid::{uuid, Uuid};
 
-const RACEBOX_LOCAL_NAME: &str = "RaceBox Mini";
+const RACEBOX_LOCAL_NAME_PREFIX: &str = "RaceBox Mini ";
 
 // RaceBox mini characteristics
 const DEVICE_INFO_CHAR: Uuid = uuid!("0000180a-0000-1000-8000-00805f9b34fb");
@@ -21,6 +22,7 @@ pub struct RbConnection {
     adapter_list: Vec<btleplug::platform::Adapter>,
     manager: Box<btleplug::platform::Manager>,
     peripherals: Vec<btleplug::platform::Peripheral>,
+    pub serial: String,
 }
 
 impl RbConnection {
@@ -45,32 +47,37 @@ impl RbConnection {
             adapter_list,
             manager,
             peripherals,
+            serial: String::new(),
         })
     }
 
-    pub async fn connect(&self) -> Result<(), String> {
+    pub async fn connect(&mut self) -> Result<(), String> {
         for peripheral in self.peripherals.iter() {
             let properties = peripheral.properties().await.unwrap();
             let is_connected = peripheral.is_connected().await.unwrap();
-            let local_name = properties.unwrap().local_name.unwrap_or(String::from("unknown name"));
-            let address = peripheral.address();
+            let local_name = properties
+                .unwrap()
+                .local_name
+                .unwrap_or(String::from("unknown name"));
 
-            if !local_name.starts_with(RACEBOX_LOCAL_NAME) {
-               continue
+            if !local_name.starts_with(RACEBOX_LOCAL_NAME_PREFIX) {
+                continue;
             }
 
             if is_connected {
-                return Ok(())
+                println!("already connected");
+                return Ok(());
             }
 
             if let Err(err) = peripheral.connect().await {
-                continue
+                continue;
             }
-
-            println!("connected");
-
-            return Ok(())
+            self.serial = local_name
+                .strip_prefix(RACEBOX_LOCAL_NAME_PREFIX)
+                .unwrap()
+                .to_string();
+            return Ok(());
         }
-        return Err(String::from("failed to find racebox mini"))
+        return Err(String::from("failed to find racebox mini"));
     }
 }
