@@ -1,5 +1,4 @@
 use btleplug::api::{Central, Manager, Peripheral, ScanFilter};
-use serde::__private::de::IdentifierDeserializer;
 use std::time::Duration;
 use tokio::time;
 use uuid::{uuid, Uuid};
