@@ -3,7 +3,7 @@ use std::io::{self, Write};
 use tokio::sync::mpsc;
 
 use rbmini::connection::RbManager;
-use rbmini::message::decode_rb_message;
+use rbmini::message::{decode_rb_message, rb_checksum};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {

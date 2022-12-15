@@ -17,9 +17,14 @@ struct RbHeader {
     length: u16,
 }
 
+impl fmt::Display for RbHeader {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} {} {}", self.start, self.class, self.length)
+    }
+}
+
 // RaceBox Mini data message sent at 25hz
 // Message class 0xFF, message ID 0x01
-#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 pub struct RbMessage {
     // Todo: factor out the first three fields
@@ -161,6 +166,12 @@ struct RbChecksum {
     value: u16,
 }
 
+impl fmt::Display for RbChecksum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
 impl RbMessage {
     // Validity Flags
     pub fn is_valid_date(&self) -> bool {
@@ -263,19 +274,62 @@ impl fmt::Display for RbMessage {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "
-        Lat/Long        ({},\t{})
-        LatG/LongG/AltG ({},\t{},\t{})
-        RotX/RotY/RotZ  ({},\t{},\t{})
-        ",
-            self.latitude,
-            self.longitude,
-            self.g_force_x,
-            self.g_force_y,
-            self.g_force_z,
-            self.rot_rate_x,
-            self.rot_rate_y,
-            self.rot_rate_z
+            "RaceBox Mini Stream
+
+ITOW             {itow}
+Date/Time        {year}/{month}/{day} {hours}:{minutes}:{seconds}
+Time Accuracy    {time_accuracy} {nanoseconds}
+Number of svs    {num_svs}
+Fix Status       {fix_status}
+Fix Flags        {fix_flags}
+WGS Altitude     {wgs_alt}
+MSL Altitude     {msl_alt}
+Accuracy        ({horiz_acc},\t{vert_acc})
+Speed            {speed}
+Heading          {heading}
+Speed Accuracy   {speed_acc}
+Heading Accuracy {heading_acc}
+PDOP             {pdop}
+Lat/Long        ({lat},\t{long})
+LatG/LongG/AltG ({lat_g},\t{long_g},\t{alt_g})
+RotX/RotY/RotZ  ({rot_x},\t{rot_y},\t{rot_z})
+LatLong Flags   {latlong_flags}
+Battery Status  {battery_status}
+Header/Checksum {header} {checksum}
+",
+            itow = self.itow,
+            year = self.year,
+            month = self.month,
+            day = self.day,
+            hours = self.hour,
+            minutes = self.minute,
+            seconds = self.second,
+            time_accuracy = self.time_accuracy,
+            nanoseconds = self.nanoseconds,
+            num_svs = self.number_of_svs,
+            fix_status = self.fix_status,
+            fix_flags = self.fix_status_flags,
+            wgs_alt = self.wgs_altitude,
+            msl_alt = self.msl_altitude,
+            horiz_acc = self.horizontal_accuracy,
+            vert_acc = self.vertical_accuracy,
+            speed = self.speed,
+            heading = self.heading,
+            speed_acc = self.speed_accuracy,
+            heading_acc = self.heading_accuracy,
+            pdop = self.pdop,
+            lat = self.latitude,
+            long = self.longitude,
+            lat_g = self.g_force_x,
+            long_g = self.g_force_y,
+            alt_g = self.g_force_z,
+            rot_x = self.rot_rate_x,
+            rot_y = self.rot_rate_y,
+            rot_z = self.rot_rate_z,
+            latlong_flags = self.lat_lon_flags,
+            battery_status = self.battery_status,
+            header = self.header,
+            checksum = self.checksum,
         )
     }
 }
