@@ -17,15 +17,15 @@ const RX_CHAR: Uuid = uuid!("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
 const TX_CHAR: Uuid = uuid!("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
 
 // btle connection management
-pub struct RbConnection {
+pub struct RbManager {
     adapter_list: Vec<btleplug::platform::Adapter>,
     manager: Box<btleplug::platform::Manager>,
     peripherals: Vec<btleplug::platform::Peripheral>,
     pub serial: String,
 }
 
-impl RbConnection {
-    pub async fn new() -> Result<RbConnection, String> {
+impl RbManager {
+    pub async fn new() -> Result<RbManager, String> {
         let manager = Box::new(btleplug::platform::Manager::new().await.unwrap());
 
         let adapter_list = manager.adapters().await.unwrap();
@@ -42,7 +42,7 @@ impl RbConnection {
             }
         }
 
-        Ok(RbConnection {
+        Ok(RbManager {
             adapter_list,
             manager,
             peripherals,

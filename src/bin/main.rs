@@ -1,11 +1,11 @@
 use std::error::Error;
 
-use rbmini::connection::RbConnection;
+use rbmini::connection::RbManager;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     println!("Creating a new RbConnecting handler");
-    let mut rb = match RbConnection::new().await {
+    let mut rb = match RbManager::new().await {
         Err(e) => {
             panic!("{}", e);
         }
