@@ -1,6 +1,10 @@
 use std::error::Error;
+use std::time::Duration;
+use tokio::sync::mpsc;
+use tokio::time;
 
 use rbmini::connection::RbManager;
+use rbmini::message::decode_rb_message;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -13,15 +17,25 @@ async fn main() -> Result<(), Box<dyn Error>> {
     };
 
     println!("connecting to racebox mini");
-    match rb.connect().await {
+    let rc = match rb.connect().await {
         Err(e) => {
             panic!("{}", e);
         }
-        Ok(conn) => {
-            println!("connected");
-            conn.stream().await;
+        Ok(conn) => conn,
+    };
+
+    let (tx, mut rx) = mpsc::channel(32);
+
+    tokio::spawn(async move {
+        rc.stream(tx).await;
+    });
+
+    loop {
+        //println!("Waiting for values from rb");
+        while let Some(msg) = rx.recv().await {
+            let rb_msg = decode_rb_message(&msg.value);
+            print!("{esc}[2J{esc}[1;1H {d:?}", esc = 27 as char, d = rb_msg);
+            time::sleep(Duration::from_secs(1)).await;
         }
     }
-
-    Ok(())
 }

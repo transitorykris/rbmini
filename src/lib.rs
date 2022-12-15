@@ -1,2 +1,2 @@
 pub mod connection;
-mod message;
+pub mod message;

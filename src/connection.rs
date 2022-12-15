@@ -2,8 +2,11 @@ use btleplug::api::{Central, CharPropFlags, Manager, Peripheral, ScanFilter};
 use futures::stream::StreamExt;
 use std::error::Error;
 use std::time::Duration;
+use tokio::sync::mpsc;
 use tokio::time;
 use uuid::{uuid, Uuid};
+
+use crate::message::{self, RbMessage};
 
 const RACEBOX_LOCAL_NAME_PREFIX: &str = "RaceBox Mini ";
 
@@ -95,7 +98,10 @@ impl RbManager {
 }
 
 impl RbConnection {
-    pub async fn stream(&self) -> Result<(), Box<dyn Error>> {
+    pub async fn stream(
+        &self,
+        channel: mpsc::Sender<btleplug::api::ValueNotification>,
+    ) -> Result<(), Box<dyn Error>> {
         for characteristic in self.peripheral.characteristics() {
             if characteristic.uuid == TX_CHAR
                 && characteristic.properties.contains(CharPropFlags::NOTIFY)
@@ -103,8 +109,9 @@ impl RbConnection {
                 self.peripheral.subscribe(&characteristic).await?;
                 let mut stream = self.peripheral.notifications().await?;
 
+                println!("Preparing to send data");
                 while let Some(data) = stream.next().await {
-                    println!("Received data from [{:?}]: {:?}", data.uuid, data.value);
+                    channel.send(data).await?;
                 }
             }
         }
