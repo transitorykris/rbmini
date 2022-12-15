@@ -2,12 +2,14 @@ use bincode::deserialize;
 use serde::Deserialize;
 use std::fmt;
 
+#[allow(dead_code)]
 enum FixStatus {
     NoFix = 0,
     Fix2D = 2,
     Fix3D = 3,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct RbHeader {
     start: u16,
@@ -17,6 +19,7 @@ struct RbHeader {
 
 // RaceBox Mini data message sent at 25hz
 // Message class 0xFF, message ID 0x01
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 pub struct RbMessage {
     // Todo: factor out the first three fields
@@ -152,6 +155,7 @@ pub struct RbMessage {
 }
 
 // RaceBox Mini
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct RbChecksum {
     value: u16,
