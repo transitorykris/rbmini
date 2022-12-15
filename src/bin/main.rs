@@ -31,10 +31,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
+    let mut checksum_failures = 0;
     loop {
         while let Some(msg) = rx.recv().await {
+            if !rb_checksum(&msg.value) {
+                checksum_failures += 1;
+            }
             let rb_msg = decode_rb_message(&msg.value);
             print!("{esc}[2J{esc}[1;1H {d}", esc = 27 as char, d = rb_msg);
+            print!("Checksum failures {}", checksum_failures);
             io::stdout().flush().expect("Couldn't flush stdout");
         }
     }

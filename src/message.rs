@@ -160,7 +160,6 @@ pub struct RbMessage {
 }
 
 // RaceBox Mini
-#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct RbChecksum {
     value: u16,
