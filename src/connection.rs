@@ -52,7 +52,9 @@ impl RbManager {
         }
         let mut peripherals = Vec::new();
         for adapter in adapter_list.iter() {
-            adapter.start_scan(ScanFilter::default()).await;
+            if adapter.start_scan(ScanFilter::default()).await.is_err() {
+                return Err(String::from("Failed to scan for adapters"));
+            }
             time::sleep(Duration::from_secs(10)).await;
             peripherals = adapter.peripherals().await.unwrap();
             if peripherals.is_empty() {
@@ -74,19 +76,13 @@ impl RbManager {
             let local_name = properties
                 .unwrap()
                 .local_name
-                .unwrap_or(String::from("unknown name"));
+                .unwrap_or_else(|| String::from("unknown name"));
 
             if !local_name.starts_with(RACEBOX_LOCAL_NAME_PREFIX) {
                 continue;
             }
 
-            // XXX
-            if is_connected {
-                println!("already connected");
-                //return Ok(());
-            }
-
-            if let Err(err) = peripheral.connect().await {
+            if !is_connected && peripheral.connect().await.is_err() {
                 continue;
             }
 
@@ -101,7 +97,7 @@ impl RbManager {
                 serial,
             });
         }
-        return Err(String::from("failed to find racebox mini"));
+        Err(String::from("failed to find racebox mini"))
     }
 }
 
