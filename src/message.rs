@@ -1,7 +1,6 @@
 use bincode::deserialize;
 use serde::Deserialize;
 use std::fmt;
-use uuid::{uuid, Uuid};
 
 enum FixStatus {
     NoFix = 0,

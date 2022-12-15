@@ -6,8 +6,6 @@ use tokio::sync::mpsc;
 use tokio::time;
 use uuid::{uuid, Uuid};
 
-use crate::message::{self, RbMessage};
-
 const RACEBOX_LOCAL_NAME_PREFIX: &str = "RaceBox Mini ";
 
 // RaceBox mini characteristics
