@@ -26,7 +26,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let (tx, mut rx) = mpsc::channel(32);
 
     tokio::spawn(async move {
-        rc.stream(tx).await;
+        if let Err(err) = rc.stream(tx).await {
+            panic!("Stream failed: {}", err)
+        }
     });
 
     loop {
