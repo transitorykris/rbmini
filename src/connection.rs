@@ -109,7 +109,6 @@ impl RbConnection {
                 self.peripheral.subscribe(&characteristic).await?;
                 let mut stream = self.peripheral.notifications().await?;
 
-                println!("Preparing to send data");
                 while let Some(data) = stream.next().await {
                     channel.send(data).await?;
                 }

@@ -1,5 +1,6 @@
 use bincode::deserialize;
 use serde::Deserialize;
+use std::fmt;
 use uuid::{uuid, Uuid};
 
 enum FixStatus {
@@ -252,6 +253,27 @@ impl RbMessage {
     pub fn differential_correction_age(&self) -> bool {
         // TODO
         false
+    }
+}
+
+impl fmt::Display for RbMessage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "
+        Lat/Long        ({},\t{})
+        LatG/LongG/AltG ({},\t{},\t{})
+        RotX/RotY/RotZ  ({},\t{},\t{})
+        ",
+            self.latitude,
+            self.longitude,
+            self.g_force_x,
+            self.g_force_y,
+            self.g_force_z,
+            self.rot_rate_x,
+            self.rot_rate_y,
+            self.rot_rate_z
+        )
     }
 }
 
