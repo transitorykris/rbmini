@@ -17,8 +17,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Err(e) => {
             panic!("{}", e);
         }
-        Ok(_) => {
-            println!("connected to {:?}", rb.serial);
+        Ok(conn) => {
+            println!("connected");
+            conn.stream().await;
         }
     }
 

@@ -1,4 +1,6 @@
-use btleplug::api::{Central, Manager, Peripheral, ScanFilter};
+use btleplug::api::{Central, CharPropFlags, Manager, Peripheral, ScanFilter};
+use futures::stream::StreamExt;
+use std::error::Error;
 use std::time::Duration;
 use tokio::time;
 use uuid::{uuid, Uuid};
@@ -21,6 +23,11 @@ pub struct RbManager {
     adapter_list: Vec<btleplug::platform::Adapter>,
     manager: Box<btleplug::platform::Manager>,
     peripherals: Vec<btleplug::platform::Peripheral>,
+}
+
+// RaceBox Mini connection
+pub struct RbConnection {
+    peripheral: btleplug::platform::Peripheral,
     pub serial: String,
 }
 
@@ -46,11 +53,10 @@ impl RbManager {
             adapter_list,
             manager,
             peripherals,
-            serial: String::new(),
         })
     }
 
-    pub async fn connect(&mut self) -> Result<(), String> {
+    pub async fn connect(&mut self) -> Result<RbConnection, String> {
         for peripheral in self.peripherals.iter() {
             let properties = peripheral.properties().await.unwrap();
             let is_connected = peripheral.is_connected().await.unwrap();
@@ -63,20 +69,45 @@ impl RbManager {
                 continue;
             }
 
+            // XXX
             if is_connected {
                 println!("already connected");
-                return Ok(());
+                //return Ok(());
             }
 
             if let Err(err) = peripheral.connect().await {
                 continue;
             }
-            self.serial = local_name
+
+            let serial = local_name
                 .strip_prefix(RACEBOX_LOCAL_NAME_PREFIX)
                 .unwrap()
                 .to_string();
-            return Ok(());
+
+            let r_peripheral = peripheral.clone();
+            return Ok(RbConnection {
+                peripheral: r_peripheral,
+                serial,
+            });
         }
         return Err(String::from("failed to find racebox mini"));
+    }
+}
+
+impl RbConnection {
+    pub async fn stream(&self) -> Result<(), Box<dyn Error>> {
+        for characteristic in self.peripheral.characteristics() {
+            if characteristic.uuid == TX_CHAR
+                && characteristic.properties.contains(CharPropFlags::NOTIFY)
+            {
+                self.peripheral.subscribe(&characteristic).await?;
+                let mut stream = self.peripheral.notifications().await?;
+
+                while let Some(data) = stream.next().await {
+                    println!("Received data from [{:?}]: {:?}", data.uuid, data.value);
+                }
+            }
+        }
+        Ok(())
     }
 }
