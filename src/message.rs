@@ -9,7 +9,6 @@ enum FixStatus {
     Fix3D = 3,
 }
 
-#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct RbHeader {
     start: u16,
