@@ -170,7 +170,57 @@ impl fmt::Display for RbChecksum {
     }
 }
 
+impl Default for RbMessage {
+    fn default() -> Self {
+        RbMessage {
+            header: RbHeader {
+                start: 0,
+                class: 0,
+                length: 0,
+            },
+            itow: 0,
+            year: 0,
+            month: 0,
+            day: 0,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            validity: 0,
+            time_accuracy: 0,
+            nanoseconds: 0,
+            fix_status: 0,
+            fix_status_flags: 0,
+            date_time_flags: 0,
+            number_of_svs: 0,
+            longitude: 0,
+            latitude: 0,
+            wgs_altitude: 0,
+            msl_altitude: 0,
+            horizontal_accuracy: 0,
+            vertical_accuracy: 0,
+            speed: 0,
+            heading: 0,
+            speed_accuracy: 0,
+            heading_accuracy: 0,
+            pdop: 0,
+            lat_lon_flags: 0,
+            battery_status: 0,
+            g_force_x: 0,
+            g_force_y: 0,
+            g_force_z: 0,
+            rot_rate_x: 0,
+            rot_rate_y: 0,
+            rot_rate_z: 0,
+            checksum: RbChecksum { value: 0 },
+        }
+    }
+}
+
 impl RbMessage {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     // Validity Flags
     pub fn is_valid_date(&self) -> bool {
         if self.validity & 1 == 1 {
@@ -376,6 +426,14 @@ E1 0D 3B 37 6F 19 61 8C 09 00 0F 01 09 00 9C 03
 #[cfg(test)]
 mod tests {
     use crate::message;
+
+    use super::RbMessage;
+
+    #[test]
+    fn test_rb_new() {
+        let msg = RbMessage::new();
+        assert_eq!(msg.year, 0);
+    }
 
     #[test]
     fn test_rb_checksum() {
