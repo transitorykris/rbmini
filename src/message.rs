@@ -1,4 +1,6 @@
 use bincode::deserialize;
+use chrono::TimeZone;
+use chrono::Utc;
 use serde::Deserialize;
 use std::fmt;
 
@@ -34,6 +36,23 @@ impl fmt::Display for Coordinates {
     }
 }
 
+#[derive(Clone, Copy, Deserialize, Debug, PartialEq, Eq)]
+pub struct Datetime {
+    pub year: u16,
+    pub month: u8,
+    pub day: u8,
+    pub hour: u8,
+    pub minute: u8,
+    pub second: u8,
+}
+
+impl fmt::Display for Datetime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let dt = Utc.with_ymd_and_hms(2014, 11, 28, 12, 0, 9).unwrap();
+        write!(f, "{}", dt)
+    }
+}
+
 // RaceBox Mini data message sent at 25hz
 // Message class 0xFF, message ID 0x01
 #[derive(Deserialize, Debug)]
@@ -48,12 +67,7 @@ pub struct RbMessage {
     message. Note that the Nanoseconds are signed and can be negative. Month
     indexing starts from 1 for January
     */
-    year: u16,
-    month: u8,
-    day: u8,
-    hour: u8,
-    minute: u8,
-    second: u8,
+    datetime: Datetime,
 
     /*
     Validity Flags
@@ -190,12 +204,14 @@ impl Default for RbMessage {
                 length: 0,
             },
             itow: 0,
-            year: 0,
-            month: 0,
-            day: 0,
-            hour: 0,
-            minute: 0,
-            second: 0,
+            datetime: Datetime {
+                year: 0,
+                month: 0,
+                day: 0,
+                hour: 0,
+                minute: 0,
+                second: 0,
+            },
             validity: 0,
             time_accuracy: 0,
             nanoseconds: 0,
@@ -342,7 +358,7 @@ impl fmt::Display for RbMessage {
             "RaceBox Mini Stream
 
 ITOW             {itow}
-Date/Time        {year}/{month}/{day} {hours}:{minutes}:{seconds}
+Date/Time        {datetime}
 Time Accuracy    {time_accuracy} {nanoseconds}
 Number of svs    {num_svs}
 Fix Status       {fix_status}
@@ -363,12 +379,7 @@ Battery Status  {battery_status}
 Header/Checksum {header} {checksum}
 ",
             itow = self.itow,
-            year = self.year,
-            month = self.month,
-            day = self.day,
-            hours = self.hour,
-            minutes = self.minute,
-            seconds = self.second,
+            datetime = self.datetime,
             time_accuracy = self.time_accuracy,
             nanoseconds = self.nanoseconds,
             num_svs = self.number_of_svs,
@@ -448,7 +459,7 @@ mod tests {
     #[test]
     fn test_rb_new() {
         let msg = RbMessage::new();
-        assert_eq!(msg.year, 0);
+        assert_eq!(msg.header.class, 0);
     }
 
     #[test]
@@ -491,12 +502,17 @@ mod tests {
         assert_eq!(message.header.class, 0x01FF);
         assert_eq!(message.header.length, 80);
         assert_eq!(message.itow, 118286240);
-        assert_eq!(message.year, 2022);
-        assert_eq!(message.month, 1);
-        assert_eq!(message.day, 10);
-        assert_eq!(message.hour, 8);
-        assert_eq!(message.minute, 51);
-        assert_eq!(message.second, 8);
+        assert_eq!(
+            message.datetime,
+            super::Datetime {
+                year: 2022,
+                month: 1,
+                day: 10,
+                hour: 8,
+                minute: 51,
+                second: 8,
+            }
+        );
         assert_eq!(message.time_accuracy, 25);
         assert_eq!(message.nanoseconds, 239971626);
         assert_eq!(message.fix_status, 3);
