@@ -157,7 +157,7 @@ pub struct RbMessage {
     vertical_accuracy: u32,
 
     // Speed is the ground speed of the vehicle in millimetres per second.
-    pub speed: i32,
+    speed: i32,
 
     /*
     Heading is the direction of motion in degrees with a factor of 10^5, where zero is North
