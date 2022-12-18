@@ -24,8 +24,8 @@ impl fmt::Display for RbHeader {
 
 #[derive(Clone, Copy, Deserialize, Debug, PartialEq, Eq)]
 pub struct Coordinates {
-    longitude: i32,
-    latitude: i32,
+    pub longitude: i32,
+    pub latitude: i32,
 }
 
 impl fmt::Display for Coordinates {
