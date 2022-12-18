@@ -1,5 +1,4 @@
 use bincode::deserialize;
-use chrono::Local;
 use chrono::LocalResult;
 use chrono::TimeZone;
 use chrono::Utc;
@@ -28,13 +27,23 @@ impl fmt::Display for RbHeader {
 
 #[derive(Clone, Copy, Deserialize, Debug, PartialEq, Eq)]
 pub struct Coordinates {
-    pub longitude: i32,
-    pub latitude: i32,
+    longitude: i32,
+    latitude: i32,
 }
 
 impl fmt::Display for Coordinates {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}, {}", self.latitude, self.longitude)
+        write!(f, "{}, {}", self.latitude(), self.longitude())
+    }
+}
+
+impl Coordinates {
+    pub fn longitude(&self) -> f64 {
+        self.longitude as f64 / 10000000.0
+    }
+
+    pub fn latitude(&self) -> f64 {
+        self.latitude as f64 / 10000000.0
     }
 }
 
@@ -648,5 +657,7 @@ mod tests {
                 longitude: 232887238
             }
         );
+        assert_eq!(message.gps_coordinates().longitude(), 23.2887238);
+        assert_eq!(message.gps_coordinates().latitude(), 42.6719035);
     }
 }
