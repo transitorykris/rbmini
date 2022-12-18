@@ -22,6 +22,18 @@ impl fmt::Display for RbHeader {
     }
 }
 
+#[derive(Clone, Copy, Deserialize, Debug, PartialEq, Eq)]
+pub struct Coordinates {
+    longitude: i32,
+    latitude: i32,
+}
+
+impl fmt::Display for Coordinates {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}, {}", self.latitude, self.longitude)
+    }
+}
+
 // RaceBox Mini data message sent at 25hz
 // Message class 0xFF, message ID 0x01
 #[derive(Deserialize, Debug)]
@@ -84,8 +96,7 @@ pub struct RbMessage {
     number_of_svs: u8, // number of space vehicles used to compute the solution
 
     // coordinates of the received with a factor of 10^7
-    longitude: i32,
-    latitude: i32,
+    coordinates: Coordinates,
 
     /*
     WGS and MSL altitude: Altitude in millimetres. The WGS altitude is in the coordinate
@@ -192,8 +203,10 @@ impl Default for RbMessage {
             fix_status_flags: 0,
             date_time_flags: 0,
             number_of_svs: 0,
-            longitude: 0,
-            latitude: 0,
+            coordinates: Coordinates {
+                latitude: 0,
+                longitude: 0,
+            },
             wgs_altitude: 0,
             msl_altitude: 0,
             horizontal_accuracy: 0,
@@ -317,8 +330,8 @@ impl RbMessage {
         false
     }
 
-    pub fn gps_coordinates(&self) -> (i32, i32) {
-        (self.latitude, self.longitude)
+    pub fn gps_coordinates(&self) -> Coordinates {
+        self.coordinates
     }
 }
 
@@ -342,7 +355,7 @@ Heading          {heading}
 Speed Accuracy   {speed_acc}
 Heading Accuracy {heading_acc}
 PDOP             {pdop}
-Lat/Long        ({lat},\t{long})
+Lat/Long        ({coordinates})
 LatG/LongG/AltG ({lat_g},\t{long_g},\t{alt_g})
 RotX/RotY/RotZ  ({rot_x},\t{rot_y},\t{rot_z})
 LatLong Flags   {latlong_flags}
@@ -370,8 +383,7 @@ Header/Checksum {header} {checksum}
             speed_acc = self.speed_accuracy,
             heading_acc = self.heading_accuracy,
             pdop = self.pdop,
-            lat = self.latitude,
-            long = self.longitude,
+            coordinates = self.coordinates,
             lat_g = self.g_force_x,
             long_g = self.g_force_y,
             alt_g = self.g_force_z,
@@ -491,8 +503,8 @@ mod tests {
         assert_eq!(message.validity, 0x37);
         assert_eq!(message.date_time_flags, 0xEA);
         assert_eq!(message.number_of_svs, 11);
-        assert_eq!(message.longitude, 232887238); // XXX 23.2887238
-        assert_eq!(message.latitude, 426719035); // XXX 42.6719035
+        assert_eq!(message.coordinates.longitude, 232887238); // XXX 23.2887238
+        assert_eq!(message.coordinates.latitude, 426719035); // XXX 42.6719035
         assert_eq!(message.wgs_altitude, 625761); // XXX 625.761
         assert_eq!(message.msl_altitude, 590095); // XXX 590.095
         assert_eq!(message.speed, 35);
@@ -595,6 +607,12 @@ mod tests {
         ];
         let message = message::decode_rb_message(&raw);
         // TODO confirm the bits in the example packet
-        assert_eq!(message.gps_coordinates(), (426719035, 232887238));
+        assert_eq!(
+            message.gps_coordinates(),
+            super::Coordinates {
+                latitude: 426719035,
+                longitude: 232887238
+            }
+        );
     }
 }
