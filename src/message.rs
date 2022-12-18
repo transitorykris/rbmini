@@ -1,4 +1,6 @@
 use bincode::deserialize;
+use chrono::Local;
+use chrono::LocalResult;
 use chrono::TimeZone;
 use chrono::Utc;
 use serde::Deserialize;
@@ -48,8 +50,24 @@ pub struct Datetime {
 
 impl fmt::Display for Datetime {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let dt = Utc.with_ymd_and_hms(2014, 11, 28, 12, 0, 9).unwrap();
-        write!(f, "{}", dt)
+        match Utc.with_ymd_and_hms(
+            self.year.try_into().unwrap(),
+            self.month.try_into().unwrap(),
+            self.day.try_into().unwrap(),
+            self.hour.try_into().unwrap(),
+            self.minute.try_into().unwrap(),
+            self.second.try_into().unwrap(),
+        ) {
+            LocalResult::Single(dt) => {
+                write!(f, "{}", dt)
+            }
+            LocalResult::Ambiguous(_dt, _dt2) => {
+                write!(f, "Ambiguous datetime")
+            }
+            LocalResult::None => {
+                write!(f, "No valid datetime")
+            }
+        }
     }
 }
 
