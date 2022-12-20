@@ -3,6 +3,7 @@ use chrono::LocalResult;
 use chrono::TimeZone;
 use chrono::Utc;
 use serde::Deserialize;
+use serde::Serialize;
 use std::fmt;
 
 #[allow(dead_code)]
@@ -12,7 +13,7 @@ enum FixStatus {
     Fix3D = 3,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct RbHeader {
     start: u16,
     class: u16,
@@ -25,7 +26,7 @@ impl fmt::Display for RbHeader {
     }
 }
 
-#[derive(Clone, Copy, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Clone, Copy, Deserialize, Debug, PartialEq, Eq)]
 pub struct Coordinates {
     longitude: i32,
     latitude: i32,
@@ -47,7 +48,7 @@ impl Coordinates {
     }
 }
 
-#[derive(Clone, Copy, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Clone, Copy, Deserialize, Debug, PartialEq, Eq)]
 pub struct Datetime {
     pub year: u16,
     pub month: u8,
@@ -82,7 +83,7 @@ impl fmt::Display for Datetime {
 
 // RaceBox Mini data message sent at 25hz
 // Message class 0xFF, message ID 0x01
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RbMessage {
     // Todo: factor out the first three fields
     header: RbHeader,
@@ -211,7 +212,7 @@ pub struct RbMessage {
 }
 
 // RaceBox Mini
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct RbChecksum {
     value: u16,
 }
@@ -380,6 +381,10 @@ impl RbMessage {
     // Returns speed in kph
     pub fn speed(&self) -> f32 {
         self.speed as f32 * 0.0036
+    }
+
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).unwrap()
     }
 }
 
