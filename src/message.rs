@@ -386,6 +386,12 @@ impl RbMessage {
     pub fn to_json(&self) -> String {
         serde_json::to_string(self).unwrap()
     }
+
+    // Not normally used, aids in testing
+    pub fn update_coordinates(&mut self, longitude: i32, latitude: i32) {
+        self.coordinates.longitude = longitude;
+        self.coordinates.latitude = latitude;
+    }
 }
 
 impl fmt::Display for RbMessage {
