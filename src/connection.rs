@@ -106,6 +106,9 @@ impl RbConnection {
         &self,
         channel: mpsc::Sender<btleplug::api::ValueNotification>,
     ) -> Result<(), Box<dyn Error>> {
+        if self.peripheral.discover_services().await.is_err() {
+            panic!("Couldn't discover services, fix this panic please")
+        };
         for characteristic in self.peripheral.characteristics() {
             if characteristic.uuid == TX_CHAR
                 && characteristic.properties.contains(CharPropFlags::NOTIFY)
