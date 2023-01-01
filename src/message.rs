@@ -392,6 +392,40 @@ impl RbMessage {
         self.coordinates.longitude = longitude;
         self.coordinates.latitude = latitude;
     }
+
+    // Getters
+
+    pub fn datetime(&self) -> Datetime {
+        self.datetime
+    }
+
+    pub fn satelites(&self) -> u8 {
+        self.number_of_svs
+    }
+
+    pub fn altitude(&self) -> i32 {
+        self.msl_altitude
+    }
+
+    pub fn horiz_accuracy(&self) -> u32 {
+        self.horizontal_accuracy
+    }
+
+    pub fn vert_accuracy(&self) -> u32 {
+        self.vertical_accuracy
+    }
+
+    pub fn heading(&self) -> i32 {
+        self.heading
+    }
+
+    pub fn g_forces(&self) -> (i16, i16, i16) {
+        (self.g_force_x, self.g_force_y, self.g_force_z)
+    }
+
+    pub fn rot_rates(&self) -> (i16, i16, i16) {
+        (self.rot_rate_x, self.rot_rate_y, self.rot_rate_z)
+    }
 }
 
 impl fmt::Display for RbMessage {
